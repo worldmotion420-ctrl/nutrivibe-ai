@@ -126,3 +126,16 @@
 - [ ] Generate app icon and branding assets
 - [ ] Final polish and bug fixes
 
+
+
+## Phase 12: Groq AI Integration
+- [x] Create Groq AI client with vision API
+- [x] Build food detection service with confidence scoring
+- [x] Implement real-time camera image processing
+- [x] Add bounding box visualization for detected foods
+- [x] Create nutrition estimation from detected foods
+- [x] Integrate with meal breakdown screen
+- [x] Add confidence threshold filtering
+- [x] Create unit tests for Groq AI service (13 tests passing)
+- [ ] Test with various food images
+- [ ] Add AI recommendations based on detected meals
