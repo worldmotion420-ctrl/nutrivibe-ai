@@ -36,7 +36,7 @@ interface SpacePreviewerMessage {
 function isInIframe(): boolean {
   if (Platform.OS !== "web") return false;
   try {
-    return window.self !== window.top;
+    return typeof window !== 'undefined' && window.self !== window.top;
   } catch {
     return true;
   }
@@ -48,7 +48,7 @@ function isWeb(): boolean {
 
 function sendToParent(type: MessageType, payload: Record<string, unknown> = {}): void {
   // NOTE: Validate parent origin if we need to transfer sensitive data
-  if (!isWeb() || !isInIframe()) return;
+  if (!isWeb() || !isInIframe() || typeof window === 'undefined') return;
 
   const message: SpacePreviewerMessage = {
     type: "SpacePreviewerChannel",
@@ -80,7 +80,9 @@ function handleMessage(event: MessageEvent<unknown>): void {
 
   if (payload.type === "setSafeAreaInsets" && isValidInsets(payload.payload) && safeAreaCallback) {
     const insets = payload.payload;
-    const frame = { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
+    const width = typeof window !== 'undefined' ? window.innerWidth : 0;
+    const height = typeof window !== 'undefined' ? window.innerHeight : 0;
+    const frame = { x: 0, y: 0, width, height };
     safeAreaCallback({ insets, frame });
     log(
       `Received safe area insets from parent: top=${insets.top}, bottom=${insets.bottom}, left=${insets.left}, right=${insets.right}`,
@@ -104,7 +106,7 @@ export function subscribeSafeAreaInsets(callback: SafeAreaCallback): () => void 
  * Initialize Manus Runtime - just notifies parent that app is ready
  */
 export function initManusRuntime(): void {
-  if (!isWeb() || !isInIframe()) return;
+  if (!isWeb() || !isInIframe() || typeof window === 'undefined') return;
   if (initialized) return;
   initialized = true;
 
