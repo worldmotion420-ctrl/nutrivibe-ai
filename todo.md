@@ -137,6 +137,7 @@
 - [x] Integrate with meal breakdown screen
 - [x] Add confidence threshold filtering
 - [x] Create unit tests for Groq AI service (13 tests passing)
+- [x] Update to Llama 4 Scout (llama-4-70b-vision) model
 - [ ] Test with various food images
 - [ ] Add AI recommendations based on detected meals
 
