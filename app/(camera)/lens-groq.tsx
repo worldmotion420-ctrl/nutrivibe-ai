@@ -10,10 +10,11 @@ import { groqAI } from '@/lib/services/groq-ai';
 import { spacing, typography, colors } from '@/lib/design-system';
 import { useRouter } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
+import Animated, { FadeIn, SlideInUp } from 'react-native-reanimated';
 
 export default function LensGroqScreen() {
   const router = useRouter();
-  const cameraRef = useRef<CameraView>(null);
+  const cameraRef = useRef<CameraView | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -72,7 +73,7 @@ export default function LensGroqScreen() {
         console.log(`✓ Detected ${result.foods.length} foods`);
         // Auto-navigate to processing screen
         setTimeout(() => {
-          router.push('/(camera)/processing');
+          router.push('/(camera)/processing-groq');
         }, 500);
       } else {
         console.warn('No foods detected or low confidence');
