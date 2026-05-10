@@ -3,11 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Polyfill for web platform
-if (Platform.OS === 'web' && typeof window !== 'undefined') {
-  // Web platform polyfill
-  (global as any).window = global as any;
-}
+// Note: Don't set window polyfill on web - it causes errors
 
 interface UserProfile {
   id: string;

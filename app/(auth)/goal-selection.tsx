@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { Button } from '@/components/ui/button';
-import { useAuthStore } from '@/lib/stores/auth-store';
+import { useOnboardingStore } from '@/lib/stores/onboarding-store';
 
 const GOALS = [
   { id: 'lose_weight', label: 'Lose Weight', icon: '⬇️' },
@@ -17,16 +17,16 @@ const GOALS = [
 export default function GoalSelectionScreen() {
   const router = useRouter();
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
-  const { updateProfile, isLoading } = useAuthStore();
+  const { setGoal } = useOnboardingStore();
 
   const handleContinue = async () => {
     if (!selectedGoal) return;
 
     try {
-      await updateProfile({ goal: selectedGoal });
+      setGoal(selectedGoal);
       router.push('/(auth)/metrics-setup' as any);
     } catch (error) {
-      console.error('Failed to update goal:', error);
+      console.error('Failed to set goal:', error);
     }
   };
 
@@ -80,8 +80,7 @@ export default function GoalSelectionScreen() {
           <Button
             variant="primary"
             size="lg"
-            disabled={!selectedGoal || isLoading}
-            isLoading={isLoading}
+            disabled={!selectedGoal}
             onPress={handleContinue}
           >
             Continue

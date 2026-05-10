@@ -4,11 +4,11 @@ import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuthStore } from '@/lib/stores/auth-store';
+import { useOnboardingStore } from '@/lib/stores/onboarding-store';
 
 export default function MetricsSetupScreen() {
   const router = useRouter();
-  const { updateProfile, isLoading } = useAuthStore();
+  const { setMetrics: setOnboardingMetrics } = useOnboardingStore();
   const [metrics, setMetrics] = useState({
     age: '28',
     height: '175',
@@ -18,7 +18,7 @@ export default function MetricsSetupScreen() {
 
   const handleContinue = async () => {
     try {
-      await updateProfile({
+      setOnboardingMetrics({
         age: parseInt(metrics.age),
         height_cm: parseInt(metrics.height),
         weight_kg: parseFloat(metrics.weight),
@@ -26,7 +26,7 @@ export default function MetricsSetupScreen() {
       });
       router.push('/(auth)/permissions' as any);
     } catch (error) {
-      console.error('Failed to update metrics:', error);
+      console.error('Failed to set metrics:', error);
     }
   };
 
@@ -112,7 +112,6 @@ export default function MetricsSetupScreen() {
           <Button
             variant="primary"
             size="lg"
-            isLoading={isLoading}
             onPress={handleContinue}
           >
             Continue

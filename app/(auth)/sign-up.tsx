@@ -5,10 +5,12 @@ import { ScreenContainer } from '@/components/screen-container';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import { useOnboardingStore } from '@/lib/stores/onboarding-store';
 
 export default function SignUpScreen() {
   const router = useRouter();
-  const { signUp, isLoading, error } = useAuthStore();
+  const { signUp, isLoading, error, updateProfile } = useAuthStore();
+  const { getOnboardingData, clearOnboarding } = useOnboardingStore();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +37,19 @@ export default function SignUpScreen() {
 
     try {
       await signUp(email, password, fullName);
-      router.replace('/(auth)/goal-selection' as any);
+      
+      // Apply onboarding data to profile
+      const onboardingData = getOnboardingData();
+      if (onboardingData.goal || onboardingData.age) {
+        try {
+          await updateProfile(onboardingData);
+          clearOnboarding();
+        } catch (err) {
+          console.error('Failed to update profile with onboarding data:', err);
+        }
+      }
+      
+      router.replace('/(tabs)' as any);
     } catch (err: any) {
       setFormError(err.message || 'Sign up failed');
     }
