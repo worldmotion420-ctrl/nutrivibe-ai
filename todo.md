@@ -151,9 +151,12 @@
 - [ ] Test haptics on iOS and Android devices
 
 ## Phase 14: Complete Meal Logging Flow
-- [ ] Implement camera capture and image upload
-- [ ] Create meal processing with Groq AI
-- [ ] Build meal confirmation flow
+- [x] Implement camera capture and image upload
+- [x] Create meal processing with Groq AI
+- [x] Build meal confirmation flow with haptics
+- [x] Fix floating camera button visibility and placement
+- [x] Create proper camera capture screen with permissions
+- [x] Integrate Groq AI food detection in capture flow
 - [ ] Add meal editing capabilities
 - [ ] Implement quick meal actions
 - [ ] Store meals in Supabase

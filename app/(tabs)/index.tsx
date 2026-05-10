@@ -25,130 +25,138 @@ export default function DashboardScreen() {
   const currentCalories = dailySummary?.total_calories || 0;
   const currentProtein = dailySummary?.total_protein_g || 0;
 
+  const handleAddMeal = () => {
+    router.push('/(camera)/capture' as any);
+  };
+
   return (
-    <ScreenContainer className="p-6 relative">
-      <FloatingCameraButton />
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-        <View className="gap-6">
-          {/* Header */}
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-2xl font-bold text-foreground">
-                Good Evening, {user?.full_name?.split(' ')[0] || 'Michael'}
+    <ScreenContainer className="p-6">
+      <View className="flex-1 relative">
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+          <View className="gap-6">
+            {/* Header */}
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-2xl font-bold text-foreground">
+                  Good Evening, {user?.full_name?.split(' ')[0] || 'Michael'}
+                </Text>
+                <Text className="text-sm text-muted">👋</Text>
+              </View>
+              <Pressable>
+                <Text className="text-2xl">🔔</Text>
+              </Pressable>
+            </View>
+
+            {/* Calorie Progress */}
+            <GlassCard className="items-center py-8">
+              <CircularProgress
+                current={currentCalories}
+                target={calorieTarget}
+                radius={70}
+                strokeWidth={6}
+                unit="kcal"
+              />
+            </GlassCard>
+
+            {/* Macro Breakdown */}
+            <GlassCard className="gap-4">
+              <Text className="text-lg font-semibold text-foreground">Today's Macros</Text>
+              <View className="gap-3">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm text-muted">Protein</Text>
+                  <Text className="text-sm font-semibold text-primary">
+                    {Math.round(currentProtein)}g / {proteinTarget}g
+                  </Text>
+                </View>
+                <View className="h-2 bg-surface rounded-full overflow-hidden">
+                  <View
+                    className="h-full bg-primary"
+                    style={{
+                      width: `${Math.min((currentProtein / proteinTarget) * 100, 100)}%`,
+                    }}
+                  />
+                </View>
+
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm text-muted">Carbs</Text>
+                  <Text className="text-sm font-semibold text-primary">
+                    {Math.round(dailySummary?.total_carbs_g || 0)}g
+                  </Text>
+                </View>
+
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm text-muted">Fat</Text>
+                  <Text className="text-sm font-semibold text-primary">
+                    {Math.round(dailySummary?.total_fat_g || 0)}g
+                  </Text>
+                </View>
+
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm text-muted">Water</Text>
+                  <Text className="text-sm font-semibold text-primary">
+                    {(dailySummary?.total_water_ml || 0).toFixed(1)}L
+                  </Text>
+                </View>
+              </View>
+            </GlassCard>
+
+            {/* AI Insight */}
+            <GlassCard className="gap-2">
+              <View className="flex-row items-center gap-2">
+                <Text className="text-lg">✨</Text>
+                <Text className="text-sm font-semibold text-foreground">AI Insight</Text>
+              </View>
+              <Text className="text-sm text-muted">
+                You're low on protein today. Try adding more to dinner.
               </Text>
-              <Text className="text-sm text-muted">👋</Text>
-            </View>
-            <Pressable>
-              <Text className="text-2xl">🔔</Text>
-            </Pressable>
-          </View>
+            </GlassCard>
 
-          {/* Calorie Progress */}
-          <GlassCard className="items-center py-8">
-            <CircularProgress
-              current={currentCalories}
-              target={calorieTarget}
-              radius={70}
-              strokeWidth={6}
-              unit="kcal"
-            />
-          </GlassCard>
-
-          {/* Macro Breakdown */}
-          <GlassCard className="gap-4">
-            <Text className="text-lg font-semibold text-foreground">Today's Macros</Text>
+            {/* Today's Meals */}
             <View className="gap-3">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-muted">Protein</Text>
-                <Text className="text-sm font-semibold text-primary">
-                  {Math.round(currentProtein)}g / {proteinTarget}g
-                </Text>
-              </View>
-              <View className="h-2 bg-surface rounded-full overflow-hidden">
-                <View
-                  className="h-full bg-primary"
-                  style={{
-                    width: `${Math.min((currentProtein / proteinTarget) * 100, 100)}%`,
-                  }}
-                />
-              </View>
-
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-muted">Carbs</Text>
-                <Text className="text-sm font-semibold text-primary">
-                  {Math.round(dailySummary?.total_carbs_g || 0)}g
-                </Text>
-              </View>
-
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-muted">Fat</Text>
-                <Text className="text-sm font-semibold text-primary">
-                  {Math.round(dailySummary?.total_fat_g || 0)}g
-                </Text>
-              </View>
-
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-muted">Water</Text>
-                <Text className="text-sm font-semibold text-primary">
-                  {(dailySummary?.total_water_ml || 0).toFixed(1)}L
-                </Text>
-              </View>
-            </View>
-          </GlassCard>
-
-          {/* AI Insight */}
-          <GlassCard className="gap-2">
-            <View className="flex-row items-center gap-2">
-              <Text className="text-lg">✨</Text>
-              <Text className="text-sm font-semibold text-foreground">AI Insight</Text>
-            </View>
-            <Text className="text-sm text-muted">
-              You're low on protein today. Try adding more to dinner.
-            </Text>
-          </GlassCard>
-
-          {/* Today's Meals */}
-          <View className="gap-3">
-            <Text className="text-lg font-semibold text-foreground">Today's Meals</Text>
-            {meals.length > 0 ? (
-              meals.map((meal) => (
-                <Pressable
-                  key={meal.id}
-                  onPress={() => {
-                    // Navigate to meal detail
-                  }}
-                  style={({ pressed }) => [pressed && { opacity: 0.7 }]}
-                >
-                  <GlassCard className="flex-row items-center justify-between">
-                    <View className="flex-1 gap-1">
-                      <Text className="font-semibold text-foreground capitalize">
-                        {meal.meal_type}
+              <Text className="text-lg font-semibold text-foreground">Today's Meals</Text>
+              {meals.length > 0 ? (
+                meals.map((meal) => (
+                  <Pressable
+                    key={meal.id}
+                    onPress={() => {
+                      // Navigate to meal detail
+                    }}
+                    style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+                  >
+                    <GlassCard className="flex-row items-center justify-between">
+                      <View className="flex-1 gap-1">
+                        <Text className="font-semibold text-foreground capitalize">
+                          {meal.meal_type}
+                        </Text>
+                        <Text className="text-sm text-muted">{meal.meal_name}</Text>
+                      </View>
+                      <Text className="font-semibold text-primary">
+                        {meal.total_calories} kcal
                       </Text>
-                      <Text className="text-sm text-muted">{meal.meal_name}</Text>
-                    </View>
-                    <Text className="font-semibold text-primary">
-                      {meal.total_calories} kcal
-                    </Text>
-                  </GlassCard>
-                </Pressable>
-              ))
-            ) : (
-              <GlassCard className="items-center py-6">
-                <Text className="text-muted">No meals logged yet</Text>
-              </GlassCard>
-            )}
-          </View>
+                    </GlassCard>
+                  </Pressable>
+                ))
+              ) : (
+                <GlassCard className="items-center py-6">
+                  <Text className="text-muted">No meals logged yet</Text>
+                </GlassCard>
+              )}
+            </View>
 
-          {/* Quick Add Button */}
-          <Button
-            variant="primary"
-            size="lg"
-            onPress={() => router.push('/(camera)/lens' as any)}
-          >
-            + Add Meal
-          </Button>
-        </View>
-      </ScrollView>
+            {/* Quick Add Button */}
+            <Button
+              variant="primary"
+              size="lg"
+              onPress={handleAddMeal}
+            >
+              + Add Meal
+            </Button>
+          </View>
+        </ScrollView>
+
+        {/* Floating Camera Button - Outside ScrollView */}
+        <FloatingCameraButton onPress={handleAddMeal} />
+      </View>
     </ScreenContainer>
   );
 }
