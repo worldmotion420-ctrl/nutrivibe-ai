@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { createClient } from '@supabase/supabase-js';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Polyfill for web platform
+if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  // Web platform polyfill
+  (global as any).window = global as any;
+}
 
 interface UserProfile {
   id: string;
@@ -43,9 +50,12 @@ const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 let supabase: any = null;
 
 if (supabaseUrl && supabaseKey) {
+  // Use AsyncStorage only on native platforms, not on web
+  const storage = Platform.OS !== 'web' && AsyncStorage ? AsyncStorage : undefined;
+  
   supabase = createClient(supabaseUrl, supabaseKey, {
     auth: {
-      storage: AsyncStorage,
+      storage: storage as any,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
