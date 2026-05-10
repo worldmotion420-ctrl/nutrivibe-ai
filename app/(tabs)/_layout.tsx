@@ -59,7 +59,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="premium"
         options={{
-          href: null,
+          title: "Premium",
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="star.fill" color={color} />,
         }}
       />
     </Tabs>
