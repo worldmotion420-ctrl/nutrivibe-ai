@@ -139,3 +139,23 @@
 - [x] Create unit tests for Groq AI service (13 tests passing)
 - [ ] Test with various food images
 - [ ] Add AI recommendations based on detected meals
+
+
+## Phase 13: Camera Floating Button & Haptics
+- [x] Create floating action button component for camera access
+- [x] Implement haptic feedback on button taps
+- [x] Add haptic feedback on success states
+- [x] Create haptics utility module with all feedback types
+- [x] Integrate haptics into button component
+- [x] Add haptics to floating camera button
+- [ ] Test haptics on iOS and Android devices
+
+## Phase 14: Complete Meal Logging Flow
+- [ ] Implement camera capture and image upload
+- [ ] Create meal processing with Groq AI
+- [ ] Build meal confirmation flow
+- [ ] Add meal editing capabilities
+- [ ] Implement quick meal actions
+- [ ] Store meals in Supabase
+- [ ] Update daily nutrition totals
+- [ ] Add meal history updates

@@ -5,6 +5,7 @@ import { ScreenContainer } from '@/components/screen-container';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
+import { FloatingCameraButton } from '@/components/ui/floating-camera-button';
 import { useMealStore } from '@/lib/stores/meal-store';
 import { useAuthStore } from '@/lib/stores/auth-store';
 
@@ -25,7 +26,8 @@ export default function DashboardScreen() {
   const currentProtein = dailySummary?.total_protein_g || 0;
 
   return (
-    <ScreenContainer className="p-6">
+    <ScreenContainer className="p-6 relative">
+      <FloatingCameraButton />
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
         <View className="gap-6">
           {/* Header */}

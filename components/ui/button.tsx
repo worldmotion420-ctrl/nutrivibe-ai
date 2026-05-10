@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, Text, type PressableProps, View } from 'react-native';
 import { cn } from '@/lib/utils';
+import { hapticFeedback } from '@/lib/utils/haptics';
 
 interface ButtonProps extends PressableProps {
   variant?: 'primary' | 'secondary' | 'tertiary' | 'ghost';
@@ -65,9 +66,17 @@ export function Button({
     textClassName
   );
 
+  const handlePress = async (e: any) => {
+    if (!disabled && !isLoading) {
+      await hapticFeedback.tap();
+      props.onPress?.(e);
+    }
+  };
+
   return (
     <Pressable
       disabled={disabled || isLoading}
+      onPress={handlePress}
       style={({ pressed }) => ([
         pressed && !disabled && { transform: [{ scale: 0.97 }] },
         style,
