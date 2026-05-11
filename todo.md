@@ -176,5 +176,6 @@
 - [x] Create barcode button component with glow effect
 - [x] Add barcode scanner to dashboard floating buttons
 - [x] Fix barcode button routing (add missing imports)
+- [x] Create Expo Go fallback for barcode scanner (text input mode)
 - [ ] Integrate with real Open Food Facts API
 - [ ] Add barcode history and favorites
