@@ -16,6 +16,7 @@ import { PremiumButton } from '@/components/ui/button-premium';
 import { GlassCardPremium } from '@/components/ui/glass-card-premium';
 import { useFoodDetectionStore } from '@/lib/stores/food-detection-store';
 import { useMealStore } from '@/lib/stores/meal-store';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import { hapticFeedback } from '@/lib/utils/haptics';
 import { useColors } from '@/hooks/use-colors';
 
@@ -37,6 +38,7 @@ export default function MealConfirmationScreen() {
   
   const { detectionResult } = useFoodDetectionStore();
   const { addMeal } = useMealStore();
+  const { user } = useAuthStore();
   
   const [foods, setFoods] = useState<FoodItem[]>(
     (detectionResult?.foods || []).map((food: any) => ({
@@ -48,30 +50,11 @@ export default function MealConfirmationScreen() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingPortion, setEditingPortion] = useState('');
 
-  const totalCalories = foods.reduce((sum, food) => sum + food.calories, 0);
-  const totalProtein = foods.reduce((sum, food) => sum + food.protein, 0);
-  const totalCarbs = foods.reduce((sum, food) => sum + food.carbs, 0);
-  const totalFat = foods.reduce((sum, food) => sum + food.fat, 0);
-  const totalFiber = foods.reduce((sum, food) => sum + food.fiber, 0);
-
-  const handleEditPortion = (index: number, currentPortion: string) => {
-    setEditingIndex(index);
-    setEditingPortion(currentPortion);
-  };
-
-  const handleSavePortion = (index: number) => {
-    const updatedFoods = [...foods];
-    updatedFoods[index].portion = editingPortion;
-    setFoods(updatedFoods);
-    setEditingIndex(null);
-    hapticFeedback.tap();
-  };
-
-  const handleRemoveFood = (index: number) => {
-    const updatedFoods = foods.filter((_, i) => i !== index);
-    setFoods(updatedFoods);
-    hapticFeedback.tap();
-  };
+  const totalCalories = foods.reduce((sum, f) => sum + f.calories, 0);
+  const totalProtein = foods.reduce((sum, f) => sum + f.protein, 0);
+  const totalCarbs = foods.reduce((sum, f) => sum + f.carbs, 0);
+  const totalFat = foods.reduce((sum, f) => sum + f.fat, 0);
+  const totalFiber = foods.reduce((sum, f) => sum + f.fiber, 0);
 
   const handleConfirmMeal = async () => {
     if (foods.length === 0) {
@@ -79,29 +62,44 @@ export default function MealConfirmationScreen() {
       return;
     }
 
+    if (!user?.id) {
+      Alert.alert('Error', 'User not authenticated. Please sign in.');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       await hapticFeedback.heavy();
 
-      // Add meal to store
       const mealData = {
+        user_id: user.id,
         meal_name: foods.map(f => f.name).join(', '),
-        meal_type: 'meal',
+        meal_type: 'breakfast' as const,
         logged_at: new Date().toISOString(),
-        calories: totalCalories,
-        protein: totalProtein,
-        carbs: totalCarbs,
-        fat: totalFat,
-        fiber: totalFiber,
+        total_calories: totalCalories,
+        protein_g: totalProtein,
+        carbs_g: totalCarbs,
+        fat_g: totalFat,
+        fiber_g: totalFiber,
         water_ml: 0,
-        foods_detected: foods.map(f => f.name).join(', '),
-        confidence_score: foods.reduce((sum, f) => sum + f.confidence, 0) / foods.length,
-        user_id: '',
-        image_url: '',
-        ai_notes: 'Meal detected via AI camera',
+        ai_detected: true,
+        voice_corrected: false,
+        ingredients: foods.map((f, idx) => ({
+          id: `${Date.now()}-${idx}`,
+          ingredient_name: f.name,
+          portion_size: f.portion || '1 serving',
+          portion_grams: 100,
+          calories: f.calories || 0,
+          protein_g: f.protein || 0,
+          carbs_g: f.carbs || 0,
+          fat_g: f.fat || 0,
+          fiber_g: f.fiber || 0,
+          ai_detected: true,
+          confidence_score: f.confidence || 0.8,
+        })),
       };
 
-      await addMeal(mealData as any);
+      await addMeal(mealData);
       await hapticFeedback.success();
 
       Alert.alert('Success', 'Meal logged successfully!', [
@@ -112,13 +110,57 @@ export default function MealConfirmationScreen() {
           },
         },
       ]);
-    } catch (error) {
-      console.error('Error confirming meal:', error);
-      Alert.alert('Error', 'Failed to log meal. Please try again.');
+    } catch (error: any) {
+      console.error('Meal logging error:', error);
       await hapticFeedback.error();
+      Alert.alert('Error', error.message || 'Failed to log meal. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleRemoveFood = async (index: number) => {
+    setFoods(foods.filter((_, i) => i !== index));
+    await hapticFeedback.tap();
+  };
+
+  const handleEditPortion = (index: number) => {
+    setEditingIndex(index);
+    setEditingPortion(foods[index].portion);
+  };
+
+  const handleSavePortion = () => {
+    if (editingIndex !== null && editingPortion.trim()) {
+      const updatedFoods = [...foods];
+      updatedFoods[editingIndex].portion = editingPortion;
+      setFoods(updatedFoods);
+      setEditingIndex(null);
+      setEditingPortion('');
+      hapticFeedback.tap();
+    }
+  };
+
+  const handleQuickAction = (index: number, action: string) => {
+    const updatedFoods = [...foods];
+    const food = updatedFoods[index];
+
+    switch (action) {
+      case 'more':
+        food.calories = Math.round(food.calories * 1.2);
+        food.protein = Math.round(food.protein * 1.2 * 10) / 10;
+        food.carbs = Math.round(food.carbs * 1.2 * 10) / 10;
+        food.fat = Math.round(food.fat * 1.2 * 10) / 10;
+        break;
+      case 'less':
+        food.calories = Math.round(food.calories * 0.8);
+        food.protein = Math.round(food.protein * 0.8 * 10) / 10;
+        food.carbs = Math.round(food.carbs * 0.8 * 10) / 10;
+        food.fat = Math.round(food.fat * 0.8 * 10) / 10;
+        break;
+    }
+
+    setFoods(updatedFoods);
+    hapticFeedback.tap();
   };
 
   return (
@@ -134,7 +176,7 @@ export default function MealConfirmationScreen() {
         <View className="px-4 pt-6 pb-4">
           <View className="flex-row items-center justify-between mb-2">
             <Text className="text-3xl font-bold text-foreground">
-              Confirm Meal
+              Meal Breakdown
             </Text>
             <TouchableOpacity
               onPress={() => {
@@ -146,48 +188,40 @@ export default function MealConfirmationScreen() {
               <MaterialIcons name="close" size={24} color={colors.foreground} />
             </TouchableOpacity>
           </View>
-          <Text className="text-sm text-muted">
-            Review and adjust your meal details
-          </Text>
+          <Text className="text-sm text-muted">Review and adjust your meal</Text>
         </View>
 
         {/* Nutrition Summary */}
         <View className="px-4 mb-6">
-          <GlassCardPremium className="p-4">
-            <Text className="text-lg font-semibold text-foreground mb-4">
-              Total Nutrition
-            </Text>
-            <View className="space-y-3">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted">Calories</Text>
-                <Text className="text-lg font-bold text-primary">
-                  {Math.round(totalCalories)} kcal
+          <GlassCardPremium className="p-6">
+            <View className="flex-row justify-around mb-4">
+              <View className="items-center">
+                <Text className="text-3xl font-bold text-primary">
+                  {totalCalories}
                 </Text>
+                <Text className="text-xs text-muted mt-1">Calories</Text>
               </View>
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted">Protein</Text>
-                <Text className="text-sm font-semibold text-foreground">
-                  {Math.round(totalProtein)}g
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-foreground">
+                  {totalProtein}g
                 </Text>
+                <Text className="text-xs text-muted mt-1">Protein</Text>
               </View>
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted">Carbs</Text>
-                <Text className="text-sm font-semibold text-foreground">
-                  {Math.round(totalCarbs)}g
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-foreground">
+                  {totalCarbs}g
                 </Text>
+                <Text className="text-xs text-muted mt-1">Carbs</Text>
               </View>
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted">Fat</Text>
-                <Text className="text-sm font-semibold text-foreground">
-                  {Math.round(totalFat)}g
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-foreground">
+                  {totalFat}g
                 </Text>
+                <Text className="text-xs text-muted mt-1">Fat</Text>
               </View>
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted">Fiber</Text>
-                <Text className="text-sm font-semibold text-foreground">
-                  {Math.round(totalFiber)}g
-                </Text>
-              </View>
+            </View>
+            <View className="border-t border-border/30 pt-4">
+              <Text className="text-xs text-muted">Fiber: {totalFiber}g</Text>
             </View>
           </GlassCardPremium>
         </View>
@@ -204,133 +238,85 @@ export default function MealConfirmationScreen() {
                   <Text className="text-base font-semibold text-foreground">
                     {food.name}
                   </Text>
-                  <View className="flex-row items-center mt-1">
-                    <View className="bg-primary/20 rounded-full px-2 py-1 mr-2">
-                      <Text className="text-xs font-semibold text-primary">
-                        {Math.round(food.confidence * 100)}% confident
-                      </Text>
-                    </View>
+                  <View className="flex-row items-center gap-2 mt-1">
+                    <Text className="text-xs text-muted">
+                      Confidence: {Math.round(food.confidence * 100)}%
+                    </Text>
                   </View>
                 </View>
                 <TouchableOpacity
-                  onPress={() => {
-                    hapticFeedback.tap();
-                    handleRemoveFood(index);
-                  }}
+                  onPress={() => handleRemoveFood(index)}
                   className="p-2"
                 >
                   <MaterialIcons name="close" size={20} color={colors.error} />
                 </TouchableOpacity>
               </View>
 
-              {/* Portion Editor */}
+              {/* Nutrition Details */}
+              <View className="bg-surface/50 rounded-lg p-3 mb-3">
+                <View className="flex-row justify-between mb-2">
+                  <Text className="text-xs text-muted">Calories</Text>
+                  <Text className="text-sm font-semibold text-primary">
+                    {food.calories}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-xs text-muted">
+                    P: {food.protein}g | C: {food.carbs}g | F: {food.fat}g
+                  </Text>
+                </View>
+              </View>
+
+              {/* Portion Edit */}
               {editingIndex === index ? (
-                <View className="mb-3 flex-row items-center">
-                  <Text className="text-sm text-muted mr-2">Portion:</Text>
-                  <View className="flex-1 bg-surface rounded-lg px-3 py-2 mr-2">
-                    <Text
-                      className="text-foreground"
-                      onPress={() => {
-                        // This would open a portion picker in a real app
-                        handleSavePortion(index);
-                      }}
-                    >
-                      {editingPortion}
-                    </Text>
-                  </View>
+                <View className="flex-row gap-2 mb-3">
                   <TouchableOpacity
-                    onPress={() => handleSavePortion(index)}
-                    className="p-2"
+                    onPress={() => setEditingPortion(editingPortion.slice(0, -1))}
+                    className="flex-1 bg-surface rounded-lg p-2"
                   >
-                    <MaterialIcons name="check" size={20} color={colors.primary} />
+                    <Text className="text-xs text-muted text-center">
+                      {editingPortion || 'Enter portion'}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleSavePortion}
+                    className="bg-primary rounded-lg px-4 py-2"
+                  >
+                    <Text className="text-xs font-semibold text-background">Save</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
                 <TouchableOpacity
-                  onPress={() => {
-                    hapticFeedback.tap();
-                    handleEditPortion(index, food.portion);
-                  }}
-                  className="mb-3 flex-row items-center justify-between bg-surface/50 rounded-lg px-3 py-2"
+                  onPress={() => handleEditPortion(index)}
+                  className="bg-surface/50 rounded-lg p-2 mb-3"
                 >
-                  <Text className="text-sm text-muted">Portion</Text>
-                  <Text className="text-sm font-semibold text-foreground">
-                    {food.portion}
+                  <Text className="text-xs text-muted text-center">
+                    Portion: {food.portion}
                   </Text>
                 </TouchableOpacity>
               )}
 
-              {/* Nutrition Details */}
-              <View className="space-y-2">
-                <View className="flex-row justify-between">
-                  <Text className="text-xs text-muted">Calories</Text>
-                  <Text className="text-xs font-semibold text-foreground">
-                    {Math.round(food.calories)} kcal
+              {/* Quick Actions */}
+              <View className="flex-row gap-2">
+                <TouchableOpacity
+                  onPress={() => handleQuickAction(index, 'less')}
+                  className="flex-1 bg-surface rounded-lg py-2"
+                >
+                  <Text className="text-xs font-semibold text-foreground text-center">
+                    Less
                   </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="text-xs text-muted">Protein</Text>
-                  <Text className="text-xs font-semibold text-foreground">
-                    {Math.round(food.protein)}g
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleQuickAction(index, 'more')}
+                  className="flex-1 bg-surface rounded-lg py-2"
+                >
+                  <Text className="text-xs font-semibold text-foreground text-center">
+                    More
                   </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="text-xs text-muted">Carbs</Text>
-                  <Text className="text-xs font-semibold text-foreground">
-                    {Math.round(food.carbs)}g
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="text-xs text-muted">Fat</Text>
-                  <Text className="text-xs font-semibold text-foreground">
-                    {Math.round(food.fat)}g
-                  </Text>
-                </View>
+                </TouchableOpacity>
               </View>
             </GlassCardPremium>
           ))}
-        </View>
-
-        {/* Quick Actions */}
-        <View className="px-4 mb-6">
-          <Text className="text-sm font-semibold text-muted mb-2">
-            Quick Actions
-          </Text>
-          <View className="flex-row gap-2">
-            <TouchableOpacity
-              onPress={() => {
-                hapticFeedback.tap();
-                // Add more rice action
-              }}
-              className="flex-1 bg-surface rounded-lg px-3 py-2"
-            >
-              <Text className="text-xs font-semibold text-foreground text-center">
-                + More Rice
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                hapticFeedback.tap();
-                // Add sauce action
-              }}
-              className="flex-1 bg-surface rounded-lg px-3 py-2"
-            >
-              <Text className="text-xs font-semibold text-foreground text-center">
-                + Add Sauce
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                hapticFeedback.tap();
-                // Less oil action
-              }}
-              className="flex-1 bg-surface rounded-lg px-3 py-2"
-            >
-              <Text className="text-xs font-semibold text-foreground text-center">
-                - Less Oil
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
 
