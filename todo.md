@@ -150,6 +150,7 @@
 - [x] Create haptics utility module with all feedback types
 - [x] Integrate haptics into button component
 - [x] Add haptics to floating camera button
+- [x] Fix floating button routing (register camera routes)
 - [ ] Test haptics on iOS and Android devices
 
 ## Phase 14: Complete Meal Logging Flow
