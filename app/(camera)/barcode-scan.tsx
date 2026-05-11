@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -41,7 +41,7 @@ export default function BarcodeScanScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === 'granted');
