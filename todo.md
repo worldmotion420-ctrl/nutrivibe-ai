@@ -2,7 +2,7 @@
 
 ## Phase 1: Foundation & Setup
 - [x] Configure Supabase authentication (email/password)
-- [ ] Set up PostgreSQL database schema
+- [x] Set up PostgreSQL database schema (user_profiles, meals, meal_ingredients)
 - [x] Create Zustand state management stores
 - [x] Set up API clients (Supabase, Groq, Whisper)
 - [x] Configure environment variables
@@ -16,7 +16,8 @@
 - [x] Build Metrics Setup Screen (age, height, weight, activity)
 - [x] Build Permissions Screen (camera, health, notifications)
 - [x] Implement onboarding navigation flow
-- [ ] Store user preferences in Supabase
+- [x] Store user preferences in Supabase
+- [x] Fix splash screen stale auth state bug
 
 ## Phase 3: AI Camera & Processing
 - [x] Build AI Camera Lens Screen with real-time feed
@@ -70,11 +71,11 @@
 - [x] Build preferences/settings UI
 
 ## Phase 9: Backend Integration
-- [ ] Implement Supabase user authentication
-- [ ] Set up meal storage with image uploads
-- [ ] Implement Groq AI food recognition API
+- [x] Implement Supabase user authentication
+- [x] Set up meal storage with image uploads
+- [x] Implement Groq AI food recognition API
 - [ ] Integrate Whisper for voice correction
-- [ ] Build nutrition calculation engine
+- [x] Build nutrition calculation engine
 - [ ] Implement daily tracking aggregation
 - [ ] Set up push notifications
 
@@ -161,9 +162,9 @@
 - [x] Add meal editing capabilities (portion adjustment)
 - [x] Implement quick meal actions (More Rice, Add Sauce, Less Oil)
 - [x] Create meal confirmation screen with nutrition summary
-- [ ] Store meals in Supabase
-- [ ] Update daily nutrition totals
-- [ ] Add meal history updates
+- [x] Store meals in Supabase
+- [x] Update daily nutrition totals
+- [x] Add meal history updates
 
 
 ## Phase 15: Barcode Scanning

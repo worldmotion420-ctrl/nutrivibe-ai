@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
@@ -6,25 +6,41 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 
 export default function SplashScreen() {
   const router = useRouter();
-  const { isAuthenticated, restoreSession } = useAuthStore();
+  const [isReady, setIsReady] = useState(false);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const restoreSession = useAuthStore((state) => state.restoreSession);
 
   useEffect(() => {
     const initializeApp = async () => {
-      // Restore session from storage
-      await restoreSession();
+      try {
+        // Restore session from storage
+        await restoreSession();
+      } catch (err) {
+        console.error('Failed to restore session:', err);
+      }
 
-      // Simulate splash screen duration
-      setTimeout(() => {
-        if (isAuthenticated) {
-          router.replace('/(tabs)');
-        } else {
-          router.replace('/(auth)/welcome' as any);
-        }
-      }, 2000);
+      // Mark as ready to navigate
+      setIsReady(true);
     };
 
     initializeApp();
-  }, []);
+  }, [restoreSession]);
+
+  // Navigate once session is restored
+  useEffect(() => {
+    if (!isReady) return;
+
+    // Simulate splash screen duration
+    const timer = setTimeout(() => {
+      if (isAuthenticated) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/(auth)/welcome' as any);
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [isReady, isAuthenticated, router]);
 
   return (
     <ScreenContainer className="items-center justify-center">
