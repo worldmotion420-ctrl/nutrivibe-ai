@@ -60,7 +60,7 @@ export interface MealCorrection {
 class GroqAIService {
   private apiKey: string;
   private baseUrl: string = 'https://api.groq.com/openai/v1';
-  private model: string = 'llama-4-70b-vision'; // Llama 4 Scout vision model
+  private model: string = 'meta-llama/llama-4-scout-17b-16e-instruct'; // Llama 4 Scout multimodal model
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || process.env.EXPO_PUBLIC_GROQ_API_KEY || '';
