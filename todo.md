@@ -164,3 +164,14 @@
 - [ ] Store meals in Supabase
 - [ ] Update daily nutrition totals
 - [ ] Add meal history updates
+
+
+## Phase 15: Barcode Scanning
+- [x] Integrate expo-barcode-scanner
+- [x] Build barcode scanner screen with product lookup
+- [x] Implement mock product database lookup
+- [x] Add nutrition data import from barcodes
+- [x] Create barcode button component with glow effect
+- [x] Add barcode scanner to dashboard floating buttons
+- [ ] Integrate with real Open Food Facts API
+- [ ] Add barcode history and favorites

@@ -6,6 +6,7 @@ import { CircularProgress } from '@/components/ui/circular-progress';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { FloatingCameraButton } from '@/components/ui/floating-camera-button';
+import { BarcodeButton } from '@/components/ui/barcode-button';
 import { useMealStore } from '@/lib/stores/meal-store';
 import { useAuthStore } from '@/lib/stores/auth-store';
 
@@ -27,6 +28,10 @@ export default function DashboardScreen() {
 
   const handleAddMeal = () => {
     router.push('/(camera)/capture' as any);
+  };
+
+  const handleBarcodeScan = () => {
+    router.push('/(camera)/barcode-scan' as any);
   };
 
   return (
@@ -53,50 +58,43 @@ export default function DashboardScreen() {
                 current={currentCalories}
                 target={calorieTarget}
                 radius={70}
-                strokeWidth={6}
-                unit="kcal"
+                strokeWidth={8}
               />
+              <Text className="text-sm text-muted mt-4">
+                {calorieTarget - currentCalories} kcal remaining
+              </Text>
             </GlassCard>
 
-            {/* Macro Breakdown */}
+            {/* Macros */}
             <GlassCard className="gap-4">
               <Text className="text-lg font-semibold text-foreground">Today's Macros</Text>
               <View className="gap-3">
-                <View className="flex-row items-center justify-between">
+                <View className="flex-row justify-between items-center">
                   <Text className="text-sm text-muted">Protein</Text>
                   <Text className="text-sm font-semibold text-primary">
-                    {Math.round(currentProtein)}g / {proteinTarget}g
+                    {currentProtein}g / {proteinTarget}g
                   </Text>
                 </View>
                 <View className="h-2 bg-surface rounded-full overflow-hidden">
                   <View
-                    className="h-full bg-primary"
-                    style={{
-                      width: `${Math.min((currentProtein / proteinTarget) * 100, 100)}%`,
-                    }}
+                    className="h-full bg-primary rounded-full"
+                    style={{ width: `${Math.min((currentProtein / proteinTarget) * 100, 100)}%` }}
                   />
                 </View>
-
-                <View className="flex-row items-center justify-between">
+              </View>
+              <View className="gap-3">
+                <View className="flex-row justify-between items-center">
                   <Text className="text-sm text-muted">Carbs</Text>
-                  <Text className="text-sm font-semibold text-primary">
-                    {Math.round(dailySummary?.total_carbs_g || 0)}g
-                  </Text>
+                  <Text className="text-sm font-semibold text-foreground">0g</Text>
                 </View>
-
-                <View className="flex-row items-center justify-between">
+                <View className="h-2 bg-surface rounded-full" />
+              </View>
+              <View className="gap-3">
+                <View className="flex-row justify-between items-center">
                   <Text className="text-sm text-muted">Fat</Text>
-                  <Text className="text-sm font-semibold text-primary">
-                    {Math.round(dailySummary?.total_fat_g || 0)}g
-                  </Text>
+                  <Text className="text-sm font-semibold text-foreground">0g</Text>
                 </View>
-
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-sm text-muted">Water</Text>
-                  <Text className="text-sm font-semibold text-primary">
-                    {(dailySummary?.total_water_ml || 0).toFixed(1)}L
-                  </Text>
-                </View>
+                <View className="h-2 bg-surface rounded-full" />
               </View>
             </GlassCard>
 
@@ -148,14 +146,18 @@ export default function DashboardScreen() {
               variant="primary"
               size="lg"
               onPress={handleAddMeal}
+              className="w-full"
             >
               + Add Meal
             </Button>
           </View>
         </ScrollView>
 
-        {/* Floating Camera Button - Outside ScrollView */}
-        <FloatingCameraButton onPress={handleAddMeal} />
+        {/* Floating Action Buttons - Outside ScrollView */}
+        <View className="absolute bottom-6 right-6 gap-3">
+          <FloatingCameraButton onPress={handleAddMeal} />
+          <BarcodeButton onPress={handleBarcodeScan} size="md" />
+        </View>
       </View>
     </ScreenContainer>
   );
