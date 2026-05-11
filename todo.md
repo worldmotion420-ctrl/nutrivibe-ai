@@ -158,8 +158,9 @@
 - [x] Fix floating camera button visibility and placement
 - [x] Create proper camera capture screen with permissions
 - [x] Integrate Groq AI food detection in capture flow
-- [ ] Add meal editing capabilities
-- [ ] Implement quick meal actions
+- [x] Add meal editing capabilities (portion adjustment)
+- [x] Implement quick meal actions (More Rice, Add Sauce, Less Oil)
+- [x] Create meal confirmation screen with nutrition summary
 - [ ] Store meals in Supabase
 - [ ] Update daily nutrition totals
 - [ ] Add meal history updates

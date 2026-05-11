@@ -63,9 +63,9 @@ export default function CaptureScreen() {
         };
         setDetectionResult(detectionData);
 
-        // Navigate to meal breakdown
+        // Navigate to meal confirmation
         await hapticFeedback.success();
-        router.push('/(camera)/meal-breakdown' as any);
+        router.push('/(camera)/meal-confirmation' as any);
       } else {
         Alert.alert('No Food Detected', 'Please try again with a clearer image of food');
         await hapticFeedback.error();
