@@ -276,21 +276,33 @@ export default function InsightsScreen() {
   if (error) {
     return (
       <ScreenContainer className="p-6 items-center justify-center">
-        <Text className="text-lg font-semibold text-error mb-2">Error</Text>
-        <Text className="text-sm text-muted text-center">{error}</Text>
+        <View className="gap-4 items-center">
+          <Text className="text-4xl">⚠️</Text>
+          <Text className="text-lg font-semibold text-error">Error Loading Insights</Text>
+          <Text className="text-sm text-muted text-center">{error}</Text>
+          <Pressable
+            onPress={() => loadAnalytics()}
+            className="mt-2 px-6 py-2 rounded-full bg-primary"
+          >
+            <Text className="text-sm font-semibold text-background">Retry</Text>
+          </Pressable>
+        </View>
       </ScreenContainer>
     );
   }
 
-  if (!analytics) {
+  if (!analytics || analytics.dailyMetrics.length === 0) {
     return (
       <ScreenContainer className="p-6 items-center justify-center">
-        <Text className="text-lg font-semibold text-foreground mb-2">
-          No Data
-        </Text>
-        <Text className="text-sm text-muted text-center">
-          Log some meals to see your insights
-        </Text>
+        <View className="gap-4 items-center">
+          <Text className="text-4xl">📊</Text>
+          <Text className="text-lg font-semibold text-foreground">
+            No Insights Yet
+          </Text>
+          <Text className="text-sm text-muted text-center">
+            Log some meals to see your nutrition insights and trends
+          </Text>
+        </View>
       </ScreenContainer>
     );
   }

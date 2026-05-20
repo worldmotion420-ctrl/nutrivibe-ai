@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ScreenContainer } from '@/components/screen-container';
 import { GlassCard } from '@/components/ui/glass-card';
+import { SkeletonMealCard } from '@/components/ui/skeleton-loader';
 import { useMealStore } from '@/lib/stores/meal-store';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { hapticFeedback } from '@/lib/utils/haptics';
@@ -187,10 +188,11 @@ export default function HistoryScreen() {
           </View>
 
           {/* Loading State */}
-          {isLoading && (
-            <View className="items-center justify-center py-8">
-              <ActivityIndicator size="large" color="#CCFF00" />
-              <Text className="text-sm text-muted mt-2">Loading meals...</Text>
+          {isLoading && mealGroups.length === 0 && (
+            <View className="gap-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonMealCard key={i} />
+              ))}
             </View>
           )}
 
