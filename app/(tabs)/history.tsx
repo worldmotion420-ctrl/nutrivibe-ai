@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ScreenContainer } from '@/components/screen-container';
 import { GlassCard } from '@/components/ui/glass-card';
@@ -13,8 +14,9 @@ interface MealGroup {
 }
 
 export default function HistoryScreen() {
+  const router = useRouter();
   const { user } = useAuthStore();
-  const { fetchMealHistory, isLoading } = useMealStore();
+  const { fetchMealHistory, isLoading, deleteMeal } = useMealStore();
   const [filter, setFilter] = useState('all');
   const [mealGroups, setMealGroups] = useState<MealGroup[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -100,11 +102,13 @@ export default function HistoryScreen() {
         onPress: async () => {
           try {
             await hapticFeedback.impact();
-            // TODO: Implement meal deletion in meal store
+            await deleteMeal(mealId);
+            await hapticFeedback.success();
             Alert.alert('Success', 'Meal deleted');
             await loadMealHistory();
-          } catch (err) {
-            Alert.alert('Error', 'Failed to delete meal');
+          } catch (err: any) {
+            await hapticFeedback.error();
+            Alert.alert('Error', err.message || 'Failed to delete meal');
           }
         },
         style: 'destructive',
@@ -226,10 +230,11 @@ export default function HistoryScreen() {
                     {day.date}
                   </Text>
                   {filteredMeals.map((meal) => (
+                  <View key={meal.id} className="flex-row gap-2">
                     <Pressable
-                      key={meal.id}
-                      onLongPress={() => handleDeleteMeal(meal.id)}
+                      onPress={() => router.push(`/(camera)/meal-edit?mealId=${meal.id}`)}
                       style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+                      className="flex-1"
                     >
                       <GlassCard className="gap-2">
                         <View className="flex-row items-center justify-between">
@@ -276,7 +281,14 @@ export default function HistoryScreen() {
                         </Text>
                       </GlassCard>
                     </Pressable>
-                  ))}
+                    <Pressable
+                      onPress={() => handleDeleteMeal(meal.id)}
+                      style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+                      className="p-3 rounded-xl bg-error/10 border border-error items-center justify-center"
+                    >
+                      <Text className="text-lg">🗑️</Text>
+                    </Pressable>                  </View>
+                ))}
                 </View>
               );
             })}

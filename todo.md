@@ -196,14 +196,16 @@
 - [ ] Add meal image storage to Supabase
 
 ## PRODUCTION FIX - Phase 2: Missing Features
-- [ ] Implement real analytics calculations
+- [x] Implement real analytics calculations
 - [ ] Implement offline sync (real implementation)
-- [ ] Implement profile editing
+- [x] Implement profile editing
 - [ ] Implement Apple Health integration
 - [ ] Add meal recommendations
 - [ ] Implement subscription/premium logic
 - [ ] Add push notifications
 - [ ] Implement meal search/filtering
+- [x] Implement meal deletion functionality
+- [x] Implement meal editing functionality
 
 ## PRODUCTION FIX - Phase 3: Polish
 - [ ] Add success/error toast notifications

@@ -45,6 +45,7 @@ export default function ProfileScreen() {
                 <Text className="text-sm text-muted">{user?.email}</Text>
               </View>
               <Pressable
+                onPress={() => router.push('/(settings)/edit-profile' as any)}
                 style={({ pressed }) => [pressed && { opacity: 0.7 }]}
               >
                 <Text className="text-2xl">›</Text>
