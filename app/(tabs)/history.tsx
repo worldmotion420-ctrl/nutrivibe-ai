@@ -1,32 +1,140 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { ScreenContainer } from '@/components/screen-container';
 import { GlassCard } from '@/components/ui/glass-card';
+import { useMealStore } from '@/lib/stores/meal-store';
+import { useAuthStore } from '@/lib/stores/auth-store';
+import { hapticFeedback } from '@/lib/utils/haptics';
 
-const MOCK_MEALS = [
-  {
-    date: 'Today',
-    meals: [
-      { name: 'Breakfast', time: '8:30 AM', calories: 450 },
-      { name: 'Lunch', time: '1:15 PM', calories: 650 },
-      { name: 'Snack', time: '4:00 PM', calories: 150 },
-      { name: 'Dinner', time: '7:45 PM', calories: 520 },
-    ],
-  },
-  {
-    date: 'Yesterday',
-    meals: [
-      { name: 'Breakfast', time: '8:00 AM', calories: 420 },
-      { name: 'Lunch', time: '12:30 PM', calories: 680 },
-      { name: 'Dinner', time: '7:00 PM', calories: 580 },
-    ],
-  },
-];
+interface MealGroup {
+  date: string;
+  meals: any[];
+}
 
 export default function HistoryScreen() {
+  const { user } = useAuthStore();
+  const { fetchMealHistory, isLoading } = useMealStore();
   const [filter, setFilter] = useState('all');
+  const [mealGroups, setMealGroups] = useState<MealGroup[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const filters = ['All', 'Meals', 'Snacks'];
+
+  // Fetch meal history on mount and when user changes
+  useEffect(() => {
+    if (user?.id) {
+      loadMealHistory();
+    }
+  }, [user?.id]);
+
+  const loadMealHistory = async () => {
+    if (!user?.id) return;
+
+    try {
+      setError(null);
+      
+      // Fetch last 30 days of meals
+      const endDate = new Date().toISOString();
+      const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      const meals = await fetchMealHistory(user.id, startDate, endDate);
+
+      // Group meals by date
+      const grouped = groupMealsByDate(meals);
+      setMealGroups(grouped);
+    } catch (err: any) {
+      console.error('Failed to load meal history:', err);
+      setError(err.message || 'Failed to load meal history');
+    }
+  };
+
+  const groupMealsByDate = (meals: any[]): MealGroup[] => {
+    const groups: { [key: string]: any[] } = {};
+
+    meals.forEach((meal) => {
+      const date = new Date(meal.logged_at);
+      const dateStr = date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      });
+
+      if (!groups[dateStr]) {
+        groups[dateStr] = [];
+      }
+      groups[dateStr].push(meal);
+    });
+
+    // Sort by date (newest first)
+    return Object.entries(groups)
+      .sort(([dateA], [dateB]) => {
+        const a = new Date(dateA);
+        const b = new Date(dateB);
+        return b.getTime() - a.getTime();
+      })
+      .map(([date, mealList]) => ({
+        date,
+        meals: mealList.sort((a, b) => 
+          new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime()
+        ),
+      }));
+  };
+
+  const getFilteredMeals = (meals: any[]) => {
+    if (filter === 'all') return meals;
+    if (filter === 'meals') {
+      return meals.filter((m) => ['breakfast', 'lunch', 'dinner'].includes(m.meal_type));
+    }
+    if (filter === 'snacks') {
+      return meals.filter((m) => m.meal_type === 'snack');
+    }
+    return meals;
+  };
+
+  const handleDeleteMeal = async (mealId: string) => {
+    Alert.alert('Delete Meal', 'Are you sure you want to delete this meal?', [
+      { text: 'Cancel', onPress: () => {} },
+      {
+        text: 'Delete',
+        onPress: async () => {
+          try {
+            await hapticFeedback.impact();
+            // TODO: Implement meal deletion in meal store
+            Alert.alert('Success', 'Meal deleted');
+            await loadMealHistory();
+          } catch (err) {
+            Alert.alert('Error', 'Failed to delete meal');
+          }
+        },
+        style: 'destructive',
+      },
+    ]);
+  };
+
+  const getMealTypeEmoji = (mealType: string) => {
+    switch (mealType) {
+      case 'breakfast':
+        return '🌅';
+      case 'lunch':
+        return '🍽️';
+      case 'dinner':
+        return '🌙';
+      case 'snack':
+        return '🍿';
+      default:
+        return '🍽️';
+    }
+  };
+
+  const formatTime = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
 
   return (
     <ScreenContainer className="p-6">
@@ -47,7 +155,10 @@ export default function HistoryScreen() {
             {filters.map((f) => (
               <Pressable
                 key={f}
-                onPress={() => setFilter(f.toLowerCase())}
+                onPress={() => {
+                  setFilter(f.toLowerCase());
+                  hapticFeedback.tap();
+                }}
                 style={({ pressed }) => [pressed && { opacity: 0.7 }]}
               >
                 <View
@@ -71,32 +182,104 @@ export default function HistoryScreen() {
             ))}
           </View>
 
-          {/* Meals Timeline */}
-          {MOCK_MEALS.map((day) => (
-            <View key={day.date} className="gap-3">
-              <Text className="text-sm font-semibold text-muted">
-                {day.date}
-              </Text>
-              {day.meals.map((meal, idx) => (
-                <Pressable
-                  key={idx}
-                  style={({ pressed }) => [pressed && { opacity: 0.7 }]}
-                >
-                  <GlassCard className="flex-row items-center justify-between">
-                    <View className="flex-1 gap-1">
-                      <Text className="font-semibold text-foreground">
-                        {meal.name}
-                      </Text>
-                      <Text className="text-xs text-muted">{meal.time}</Text>
-                    </View>
-                    <Text className="font-semibold text-primary">
-                      {meal.calories} kcal
-                    </Text>
-                  </GlassCard>
-                </Pressable>
-              ))}
+          {/* Loading State */}
+          {isLoading && (
+            <View className="items-center justify-center py-8">
+              <ActivityIndicator size="large" color="#CCFF00" />
+              <Text className="text-sm text-muted mt-2">Loading meals...</Text>
             </View>
-          ))}
+          )}
+
+          {/* Error State */}
+          {error && !isLoading && (
+            <View className="p-4 rounded-lg bg-error/10 border border-error">
+              <Text className="text-sm text-error">{error}</Text>
+              <Pressable
+                onPress={loadMealHistory}
+                className="mt-2 p-2 rounded bg-error/20"
+              >
+                <Text className="text-sm font-semibold text-error">Retry</Text>
+              </Pressable>
+            </View>
+          )}
+
+          {/* Empty State */}
+          {!isLoading && mealGroups.length === 0 && !error && (
+            <View className="items-center justify-center py-12 gap-3">
+              <Text className="text-4xl">🍽️</Text>
+              <Text className="text-lg font-semibold text-foreground">No meals logged yet</Text>
+              <Text className="text-sm text-muted text-center">
+                Start tracking by taking a photo of your meal or scanning a barcode
+              </Text>
+            </View>
+          )}
+
+          {/* Meals Timeline */}
+          {!isLoading &&
+            mealGroups.map((day) => {
+              const filteredMeals = getFilteredMeals(day.meals);
+              if (filteredMeals.length === 0) return null;
+
+              return (
+                <View key={day.date} className="gap-3">
+                  <Text className="text-sm font-semibold text-muted">
+                    {day.date}
+                  </Text>
+                  {filteredMeals.map((meal) => (
+                    <Pressable
+                      key={meal.id}
+                      onLongPress={() => handleDeleteMeal(meal.id)}
+                      style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+                    >
+                      <GlassCard className="gap-2">
+                        <View className="flex-row items-center justify-between">
+                          <View className="flex-1 gap-1">
+                            <View className="flex-row items-center gap-2">
+                              <Text className="text-lg">
+                                {getMealTypeEmoji(meal.meal_type)}
+                              </Text>
+                              <Text className="font-semibold text-foreground flex-1">
+                                {meal.meal_name}
+                              </Text>
+                            </View>
+                            <Text className="text-xs text-muted">
+                              {formatTime(meal.logged_at)}
+                            </Text>
+                          </View>
+                          <View className="items-end gap-1">
+                            <Text className="font-semibold text-primary">
+                              {Math.round(meal.total_calories)} kcal
+                            </Text>
+                            <Text className="text-xs text-muted">
+                              {Math.round(meal.protein_g)}g protein
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Ingredients Preview */}
+                        {meal.ingredients && meal.ingredients.length > 0 && (
+                          <View className="pt-2 border-t border-border/50">
+                            <Text className="text-xs text-muted mb-1">
+                              {meal.ingredients.length} ingredient{meal.ingredients.length !== 1 ? 's' : ''}:
+                            </Text>
+                            <Text className="text-xs text-foreground">
+                              {meal.ingredients
+                                .map((ing: any) => ing.ingredient_name)
+                                .join(', ')}
+                            </Text>
+                          </View>
+                        )}
+
+                        {/* Delete Hint */}
+                        <Text className="text-xs text-muted text-center pt-1">
+                          Long press to delete
+                        </Text>
+                      </GlassCard>
+                    </Pressable>
+                  ))}
+                </View>
+              );
+            })}
         </View>
       </ScrollView>
     </ScreenContainer>

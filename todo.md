@@ -179,3 +179,50 @@
 - [x] Create Expo Go fallback for barcode scanner (text input mode)
 - [ ] Integrate with real Open Food Facts API
 - [ ] Add barcode history and favorites
+
+
+## PRODUCTION FIX - Phase 1: Critical Blockers
+- [x] Fix History screen to show real meals from Supabase
+- [x] Implement voice correction with Whisper API
+- [x] Fix permissions screen to request real permissions
+- [ ] Add error handling to all async operations
+- [ ] Add loading states to all screens
+- [ ] Add empty states to all screens
+- [x] Remove mock data from Insights screen
+- [ ] Implement meal deletion functionality
+- [ ] Implement meal editing functionality
+- [ ] Remove duplicate/unused screens
+- [ ] Fix hardcoded meal type detection
+- [ ] Add meal image storage to Supabase
+
+## PRODUCTION FIX - Phase 2: Missing Features
+- [ ] Implement real analytics calculations
+- [ ] Implement offline sync (real implementation)
+- [ ] Implement profile editing
+- [ ] Implement Apple Health integration
+- [ ] Add meal recommendations
+- [ ] Implement subscription/premium logic
+- [ ] Add push notifications
+- [ ] Implement meal search/filtering
+
+## PRODUCTION FIX - Phase 3: Polish
+- [ ] Add success/error toast notifications
+- [ ] Add confirmation dialogs for destructive actions
+- [ ] Optimize image loading and compression
+- [ ] Add pagination to history (20 meals at a time)
+- [ ] Cache meal history locally
+- [ ] Add timeout to Groq API calls
+- [ ] Remove all TODO comments
+- [ ] Add proper TypeScript types
+- [ ] Add JSDoc comments to functions
+- [ ] Clean up unused imports
+
+## PRODUCTION FIX - Phase 4: Testing
+- [ ] Unit tests for meal store
+- [ ] Unit tests for auth store
+- [ ] Integration tests for meal logging flow
+- [ ] Integration tests for user onboarding
+- [ ] Manual testing on iOS device
+- [ ] Manual testing on Android device
+- [ ] Test offline functionality
+- [ ] Test with slow internet
